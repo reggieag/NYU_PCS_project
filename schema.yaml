@@ -74,3 +74,54 @@ paths:
             application/json:
               schema:
                 $ref: '#components/schema/DataOutput'
+        '400':
+          description: Input was not a valid id
+        '404':
+          description: Data with specified id not found
+    post:
+      summary: Update data by id
+      parameters:
+        - name: dataId
+          in: path
+          required: true
+          description: ID of data
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                quantity:
+                  type: integer
+      responses:
+        '200':
+          description: Data updated
+          content:
+            application/json:
+              schema:
+                $ref: '#components/schema/DataOutput'
+        '400':
+          description: Input was not a valid id
+        '404':
+          description: Data with specified id not found
+    delete:
+      summary: Delete data by id
+      parameters:
+        - name: dataId
+          in: path
+          required: true
+          description: ID of data
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successfully deleted data
+        '400':
+          description: Input was not a valid id
+        '404':
+          description: Data with specified id not found
