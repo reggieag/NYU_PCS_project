@@ -100,7 +100,7 @@ paths:
                   type: integer
       responses:
         '200':
-          description: Data of data
+          description: Data updated
           content:
             application/json:
               schema:
