@@ -110,7 +110,7 @@ paths:
         '404':
           description: Data with specified id not found
     delete:
-      summary: Update data by id
+      summary: Delete data by id
       parameters:
         - name: dataId
           in: path
@@ -125,4 +125,3 @@ paths:
           description: Input was not a valid id
         '404':
           description: Data with specified id not found
-
