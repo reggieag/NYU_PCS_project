@@ -1,0 +1,15 @@
+version: "3.7"
+
+services:
+    api_postgres_db:
+      image: postgres
+      container_name: api_postgres_db
+      restart: always
+      ports:
+        - "127.0.0.1:5432:5432"
+      environment:
+        - POSTGRES_USER=api_user
+        - POSTGRES_PASSWORD=password
+        - POSTGRES_DB=toy_api
+      volumes:
+        - ./docker/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
