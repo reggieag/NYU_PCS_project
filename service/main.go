@@ -12,6 +12,8 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
+	"strconv"
 
 	openapi "github.com/reggieag/NYU_PCS_project/server/go"
 )
@@ -19,7 +21,22 @@ import (
 func main() {
 	log.Printf("Server started")
 
-	DefaultAPIService := openapi.NewDefaultApiService()
+	dbHost := os.Getenv("POSGTRES_HOST")
+	dbUser := os.Getenv("POSTGRES_USER")
+	dbPassword := os.Getenv("POSTGRES_PASSWORD")
+	dbName := os.Getenv("POSTGRES_DB")
+	dbPortStr := os.Getenv("POSTGRES_PORT")
+	dbPort, err := strconv.Atoi(dbPortStr)
+	if err != nil {
+		log.Fatalf("unable to parse DB port: %s", err)
+	}
+	db, err := openapi.NewDBConn(dbHost, dbPort, dbUser, dbPassword, dbName)
+	if err != nil {
+		log.Fatalf("unable to init db: %s", err)
+	}
+	defer db.Close()
+
+	DefaultAPIService := openapi.NewDefaultApiService(db)
 	DefaultAPIController := openapi.NewDefaultApiController(DefaultAPIService)
 
 	router := openapi.NewRouter(DefaultAPIController)
