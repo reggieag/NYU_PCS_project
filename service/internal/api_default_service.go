@@ -11,7 +11,7 @@ package openapi
 
 import (
 	"context"
-	"errors"
+	"log"
 	"net/http"
 )
 
@@ -52,39 +52,40 @@ func (s *DefaultApiService) DataDataIdPost(ctx context.Context, dataId int32, in
 	if inlineObject1.Name == "" && inlineObject1.Quantity == 0 {
 		return Response(http.StatusBadRequest, nil), nil
 	}
-	// TODO - update DataDataIdPost with the required logic for this service method.
-	// Add api_default_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+	resp, err := s.db.UpdateDataByID(ctx, int(dataId), inlineObject1.Name, int(inlineObject1.Quantity))
+	if err != nil {
+		return Response(http.StatusNotFound, nil), nil
+	}
 
-	//TODO: Uncomment the next line to return response Response(200, Object{}) or use other options such as http.Ok ...
-	//return Response(200, Object{}), nil
-
-	//TODO: Uncomment the next line to return response Response(400, {}) or use other options such as http.Ok ...
-	//return Response(400, nil),nil
-
-	//TODO: Uncomment the next line to return response Response(404, {}) or use other options such as http.Ok ...
-	//return Response(404, nil),nil
-
-	return Response(http.StatusNotImplemented, nil), errors.New("DataDataIdPost method not implemented")
+	return Response(http.StatusOK, resp), nil
 }
 
 // DataGet - Returns a list of data.
 func (s *DefaultApiService) DataGet(ctx context.Context) (ImplResponse, error) {
-	// TODO - update DataGet with the required logic for this service method.
-	// Add api_default_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
-
-	//TODO: Uncomment the next line to return response Response(200, []Object{}) or use other options such as http.Ok ...
-	//return Response(200, []Object{}), nil
-
-	return Response(http.StatusNotImplemented, nil), errors.New("DataGet method not implemented")
+	log.Printf("receiving get all data request")
+	resp, err := s.db.GetData(ctx)
+	if err != nil {
+		log.Printf("erro getting data: %s", err)
+		return Response(http.StatusInternalServerError, nil), err
+	}
+	log.Printf("Got %d rows back", len(resp))
+	return Response(http.StatusOK, resp), nil
 }
 
 // DataPost - Add a new entry
 func (s *DefaultApiService) DataPost(ctx context.Context, inlineObject InlineObject) (ImplResponse, error) {
-	// TODO - update DataPost with the required logic for this service method.
-	// Add api_default_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+	log.Printf("receiving add data with name %s quantity %d", inlineObject.Name, inlineObject.Quantity)
+	if inlineObject.Name == "" && inlineObject.Quantity == 0 {
+		log.Printf("both fields are 'null'. Bad request.")
+		return Response(http.StatusBadRequest, nil), nil
+	}
+	log.Printf("adding data to db")
+	resp, err := s.db.AddData(ctx, inlineObject.Name, int(inlineObject.Quantity))
+	if err != nil {
+		log.Printf("error adding to db: %s", err)
+		return Response(http.StatusInternalServerError, nil), err
+	}
+	log.Printf("data added succesfully")
 
-	//TODO: Uncomment the next line to return response Response(200, Object{}) or use other options such as http.Ok ...
-	//return Response(200, Object{}), nil
-
-	return Response(http.StatusNotImplemented, nil), errors.New("DataPost method not implemented")
+	return Response(http.StatusOK, resp), nil
 }

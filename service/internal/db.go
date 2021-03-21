@@ -12,7 +12,7 @@ type ToyAPIDB interface {
 	GetData(ctx context.Context) ([]DataOutput, error)
 	AddData(ctx context.Context, name string, quantity int) (DataOutput, error)
 	GetDataByID(ctx context.Context, id int) (DataOutput, error)
-	UpdateDataByID(ctx context.Context, id int, name *string, quantity *int) (DataOutput, error)
+	UpdateDataByID(ctx context.Context, id int, name string, quantity int) (DataOutput, error)
 	DeleteDataByID(ctx context.Context, id int) error
 	Close() error
 }
@@ -58,12 +58,9 @@ func (db *APIDatabase) GetData(ctx context.Context) ([]DataOutput, error) {
 }
 
 func (db *APIDatabase) AddData(ctx context.Context, name string, quantity int) (DataOutput, error) {
-	query := fmt.Sprintf("INSERT INTO data_table (name, quantity) VALUES (%s, %d) RETURNING id", name, quantity)
-	result, err := db.db.ExecContext(ctx, query)
-	if err != nil {
-		return DataOutput{}, err
-	}
-	id, err := result.LastInsertId()
+	query := fmt.Sprintf("INSERT INTO data_table (name, quantity) VALUES ('%s', %d) RETURNING id", name, quantity)
+	var id int
+	err := db.db.QueryRowContext(ctx, query).Scan(&id)
 	if err != nil {
 		return DataOutput{}, err
 	}
@@ -79,7 +76,7 @@ func (db *APIDatabase) GetDataByID(ctx context.Context, id int) (DataOutput, err
 	return returnVal, nil
 
 }
-func (db *APIDatabase) UpdateDataByID(ctx context.Context, id int, name *string, quantity *int) (DataOutput, error) {
+func (db *APIDatabase) UpdateDataByID(ctx context.Context, id int, name string, quantity int) (DataOutput, error) {
 	return DataOutput{}, nil
 }
 func (db *APIDatabase) DeleteDataByID(ctx context.Context, id int) error {

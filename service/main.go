@@ -16,13 +16,14 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/gorilla/handlers"
 	openapi "github.com/reggieag/NYU_PCS_project/server/internal"
 )
 
 func main() {
 	log.Printf("Server started")
 
-	dbHost := os.Getenv("POSGTRES_HOST")
+	dbHost := os.Getenv("POSTGRES_HOST")
 	dbUser := os.Getenv("POSTGRES_USER")
 	dbPassword := os.Getenv("POSTGRES_PASSWORD")
 	dbName := os.Getenv("POSTGRES_DB")
@@ -44,15 +45,18 @@ func main() {
 
 	log.Printf("service starting on port 8080")
 
-	log.Fatal(http.ListenAndServe(":8080", router))
+	log.Fatal(http.ListenAndServe(":8080",
+		handlers.RecoveryHandler(handlers.PrintRecoveryStack(true))(router)))
 }
 
 func retryDbConnection(dbHost string, dbPort int, dbUser string, dbPassword string, dbName string) (*openapi.APIDatabase, error) {
 	const maxRetries = 3
 	const timeoutInterval = time.Second
-	i := 1
 	var err error
-	for db, err := openapi.NewDBConn(dbHost, dbPort, dbUser, dbPassword, dbName); i == maxRetries+1; i++ {
+	var db *openapi.APIDatabase
+	for i := 0; i != maxRetries; i++ {
+		log.Printf("attempting to create db")
+		db, err = openapi.NewDBConn(dbHost, dbPort, dbUser, dbPassword, dbName)
 		if err == nil {
 			log.Printf("created db connection")
 			return db, nil
