@@ -31,32 +31,42 @@ func NewDefaultApiService(db ToyAPIDB) DefaultApiServicer {
 
 // DataDataIdDelete - Delete data by id
 func (s *DefaultApiService) DataDataIdDelete(ctx context.Context, dataId int32) (ImplResponse, error) {
+	log.Printf("deleting row with id %d", dataId)
 	err := s.db.DeleteDataByID(ctx, int(dataId))
 	if err != nil {
+		log.Printf("unable to delete: %s", err)
 		return Response(http.StatusNotFound, nil), nil
 	}
+	log.Printf("deleted row")
 	return Response(http.StatusOK, nil), nil
 }
 
 // DataDataIdGet - Get data by id
 func (s *DefaultApiService) DataDataIdGet(ctx context.Context, dataId int32) (ImplResponse, error) {
+	log.Printf("getting row with id %d", dataId)
 	resp, err := s.db.GetDataByID(ctx, int(dataId))
 	if err != nil {
+		log.Printf("error fetching data: %s", err)
 		return Response(http.StatusNotFound, nil), nil
 	}
+	log.Printf("fetched data")
 	return Response(http.StatusOK, resp), nil
 }
 
 // DataDataIdPost - Update data by id
 func (s *DefaultApiService) DataDataIdPost(ctx context.Context, dataId int32, inlineObject1 InlineObject1) (ImplResponse, error) {
+	log.Printf("updating row with id %d with name %s, quantity %d", dataId, inlineObject1.Name, inlineObject1.Quantity)
 	if inlineObject1.Name == "" && inlineObject1.Quantity == 0 {
+		log.Printf("both name and quantity are invalid")
 		return Response(http.StatusBadRequest, nil), nil
 	}
+	log.Printf("updating db")
 	resp, err := s.db.UpdateDataByID(ctx, int(dataId), inlineObject1.Name, int(inlineObject1.Quantity))
 	if err != nil {
+		log.Printf("error updating db: %s", err)
 		return Response(http.StatusNotFound, nil), nil
 	}
-
+	log.Printf("updated db")
 	return Response(http.StatusOK, resp), nil
 }
 
@@ -68,7 +78,7 @@ func (s *DefaultApiService) DataGet(ctx context.Context) (ImplResponse, error) {
 		log.Printf("erro getting data: %s", err)
 		return Response(http.StatusInternalServerError, nil), err
 	}
-	log.Printf("Got %d rows back", len(resp))
+	log.Printf("got %d rows back", len(resp))
 	return Response(http.StatusOK, resp), nil
 }
 
@@ -85,7 +95,7 @@ func (s *DefaultApiService) DataPost(ctx context.Context, inlineObject InlineObj
 		log.Printf("error adding to db: %s", err)
 		return Response(http.StatusInternalServerError, nil), err
 	}
-	log.Printf("data added succesfully")
+	log.Printf("data added")
 
 	return Response(http.StatusOK, resp), nil
 }

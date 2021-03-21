@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 
 	_ "github.com/lib/pq"
 )
@@ -77,9 +78,40 @@ func (db *APIDatabase) GetDataByID(ctx context.Context, id int) (DataOutput, err
 
 }
 func (db *APIDatabase) UpdateDataByID(ctx context.Context, id int, name string, quantity int) (DataOutput, error) {
-	return DataOutput{}, nil
+	updateParams := make([]string, 0, 2)
+	if name != "" {
+		updateParams = append(updateParams, fmt.Sprintf("name = '%s'", name))
+	}
+	if quantity != 0 {
+		updateParams = append(updateParams, fmt.Sprintf("quantity = '%d'", quantity))
+	}
+	query := fmt.Sprintf("UPDATE data_table SET %s WHERE id = %d", strings.Join(updateParams, ","), id)
+	result, err := db.db.ExecContext(ctx, query)
+	if err != nil {
+		return DataOutput{}, err
+	}
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return DataOutput{}, err
+	}
+	if rowsAffected != 1 {
+		return DataOutput{}, fmt.Errorf("no such id: %d", id)
+	}
+	return db.GetDataByID(ctx, id)
 }
 func (db *APIDatabase) DeleteDataByID(ctx context.Context, id int) error {
+	query := fmt.Sprintf("DELETE FROM data_table WHERE id = %d", id)
+	result, err := db.db.ExecContext(ctx, query)
+	if err != nil {
+		return err
+	}
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected != 1 {
+		return fmt.Errorf("no such id: %d", id)
+	}
 	return nil
 }
 func (db *APIDatabase) Close() error {
