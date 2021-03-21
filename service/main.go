@@ -14,8 +14,9 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
-	openapi "github.com/reggieag/NYU_PCS_project/server/go"
+	openapi "github.com/reggieag/NYU_PCS_project/server/internal"
 )
 
 func main() {
@@ -30,7 +31,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("unable to parse DB port: %s", err)
 	}
-	db, err := openapi.NewDBConn(dbHost, dbPort, dbUser, dbPassword, dbName)
+	db, err := retryDbConnection(dbHost, dbPort, dbUser, dbPassword, dbName)
 	if err != nil {
 		log.Fatalf("unable to init db: %s", err)
 	}
@@ -41,5 +42,24 @@ func main() {
 
 	router := openapi.NewRouter(DefaultAPIController)
 
+	log.Printf("service starting on port 8080")
+
 	log.Fatal(http.ListenAndServe(":8080", router))
+}
+
+func retryDbConnection(dbHost string, dbPort int, dbUser string, dbPassword string, dbName string) (*openapi.APIDatabase, error) {
+	const maxRetries = 3
+	const timeoutInterval = time.Second
+	i := 1
+	var err error
+	for db, err := openapi.NewDBConn(dbHost, dbPort, dbUser, dbPassword, dbName); i == maxRetries+1; i++ {
+		if err == nil {
+			log.Printf("created db connection")
+			return db, nil
+		}
+		sleepDuration := timeoutInterval * time.Duration(i)
+		log.Printf("unable to create db connection. Trying again in: %f", sleepDuration.Seconds())
+		time.Sleep(sleepDuration)
+	}
+	return nil, err
 }

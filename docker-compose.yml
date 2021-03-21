@@ -5,12 +5,20 @@ services:
       image: postgres
       container_name: api_postgres_db
       restart: always
-      environment:
-        - POSTGRES_USER=api_user
-        - POSTGRES_PASSWORD=password
-        - POSTGRES_DB=toy_api
+      env_file: 
+        - variables.env
       volumes:
         - ./database/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
     api_service:
-        dockerfile: service/Dockerfile
-        container_name: api_service
+      build:
+          context: ./service
+          dockerfile: Dockerfile
+      container_name: api_service
+      env_file: 
+        - variables.env
+      ports:
+        - "8080:8080"
+      volumes:
+        - ./service:/workdir
+      depends_on: 
+        - "api_postgres_db"
