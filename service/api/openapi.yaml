@@ -1,0 +1,165 @@
+openapi: 3.0.0
+info:
+  description: Toy API for testing RESTler
+  title: Toy API
+  version: 0.1.0
+servers:
+- url: /
+paths:
+  /data:
+    get:
+      description: Basically should return entire DB
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#components/schema/DataOutput'
+                type: array
+          description: JSON array of data types
+      summary: Returns a list of data.
+    post:
+      description: Add a new row to the db
+      requestBody:
+        $ref: '#/components/requestBodies/inline_object'
+        content:
+          application/json:
+            schema:
+              properties:
+                name:
+                  type: string
+                quantity:
+                  type: integer
+              required:
+              - name
+              - quantity
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#components/schema/DataOutput'
+          description: Return data
+      summary: Add a new entry
+  /data/{dataId}:
+    delete:
+      parameters:
+      - description: ID of data
+        explode: false
+        in: path
+        name: dataId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          description: Successfully deleted data
+        "400":
+          description: Input was not a valid id
+        "404":
+          description: Data with specified id not found
+      summary: Delete data by id
+    get:
+      parameters:
+      - description: ID of data
+        explode: false
+        in: path
+        name: dataId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#components/schema/DataOutput'
+          description: Data of data
+        "400":
+          description: Input was not a valid id
+        "404":
+          description: Data with specified id not found
+      summary: Get data by id
+    post:
+      parameters:
+      - description: ID of data
+        explode: false
+        in: path
+        name: dataId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        $ref: '#/components/requestBodies/inline_object_1'
+        content:
+          application/json:
+            schema:
+              properties:
+                name:
+                  type: string
+                quantity:
+                  type: integer
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#components/schema/DataOutput'
+          description: Data updated
+        "400":
+          description: Input was not a valid id
+        "404":
+          description: Data with specified id not found
+      summary: Update data by id
+components:
+  requestBodies:
+    inline_object_1:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/inline_object_1'
+      required: true
+    inline_object:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/inline_object'
+      required: true
+  schemas:
+    DataOutput:
+      properties:
+        dataId:
+          type: integer
+        name:
+          type: string
+        quantity:
+          type: integer
+      required:
+      - dataId
+      - name
+      - quantity
+    inline_object:
+      properties:
+        name:
+          type: string
+        quantity:
+          type: integer
+      required:
+      - name
+      - quantity
+      type: object
+    inline_object_1:
+      properties:
+        name:
+          type: string
+        quantity:
+          type: integer
+      type: object
