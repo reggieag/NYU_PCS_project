@@ -42,5 +42,9 @@ func runModule(moduleName string, module moduleFunc, dockerCompose string) error
 		}
 	}()
 	ctx := context.Background()
-	return module(ctx, apiPort, dbPort, dbName, dbUsername, dbPassword)
+	err := module(ctx, apiPort, dbPort, dbName, dbUsername, dbPassword)
+	if err != nil {
+		log.Printf("Received error from runner: %s", err)
+	}
+	return err
 }
