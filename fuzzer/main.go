@@ -5,9 +5,8 @@ import (
 	"fuzzer/modules/sql_injection"
 	"fuzzer/utilities"
 	"log"
+	"os"
 )
-
-const fileName = "config.yml"
 
 type moduleFunc func(ctx context.Context, moduleConfig interface{}, apiPort, dbPort int, dbName, dbUsername, dbPassword string) error
 
@@ -16,6 +15,11 @@ var availableModules = map[string]moduleFunc{
 }
 
 func main() {
+	args := os.Args
+	if len(args) < 2 {
+		log.Fatalf("No config file found. Existing\n")
+	}
+	fileName := args[1]
 	config, err := ParseConfig(fileName)
 	if err != nil {
 		log.Fatalf("Unable to read config: %s", err)
