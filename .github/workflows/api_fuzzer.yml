@@ -28,5 +28,10 @@ jobs:
       - name: Verify checkouts
         run: ls ${{ github.workspace }}
       
+      - name: Build RESTLer Image
+        run: | 
+          cd ${{ github.workspace }}/resler
+          ./build_docker.sh
+        
       - name: Check images
         run: docker images list
