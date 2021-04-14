@@ -24,6 +24,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("Unable to read config: %s", err)
 	}
+	type failedModule struct {
+		moduleName string
+		err        error
+	}
+	var failedModules []failedModule
 	for name := range config.Modules {
 		moduleFunc, ok := availableModules[name]
 		if !ok {
@@ -32,8 +37,14 @@ func main() {
 		}
 		err := runModule(name, moduleFunc, config)
 		if err != nil {
-			log.Printf("Error running module %s: %s\n", name, err)
+			failedModules = append(failedModules, failedModule{name, err})
 		}
+	}
+	if len(failedModules) != 0 {
+		for i := range failedModules {
+			log.Printf("%s failed: %s\n", failedModules[i].moduleName, failedModules[i].err)
+		}
+		os.Exit(1)
 	}
 }
 
