@@ -30,7 +30,7 @@ jobs:
       
       - name: Build RESTLer Image
         run: | 
-          cd ${{ github.workspace }}/resler
+          cd ${{ github.workspace }}/restler
           ./build_docker.sh
         
       - name: Check images
