@@ -1,18 +1,12 @@
 name: API Fuzzer
 
-# Controls when the action will run. 
 on:
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  fuzz_api:
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       - name: Checkout primary repo
         uses: actions/checkout@v2
@@ -32,6 +26,19 @@ jobs:
         run: | 
           cd ${{ github.workspace }}/restler
           ./build_docker.sh
-        
+          
       - name: Check images
-        run: docker images list
+        run: docker images
+      
+      - name: Setup Golang for runner
+        uses: actions/setup-go@v2.1.3
+        
+      - name: Build fuzzer
+        run: |
+          cd ${{ github.workspace }}/main/fuzzer
+          go build
+      
+      - name: Run fuzzer
+        run: |
+          cd ${{ github.workspace }}/main/fuzzer
+          ./fuzzer config.yml
