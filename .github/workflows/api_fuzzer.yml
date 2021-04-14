@@ -26,6 +26,11 @@ jobs:
         run: | 
           cd ${{ github.workspace }}/restler
           ./build_docker.sh
+      
+      - name: Build Fuzzer Images
+        run: |
+          cd ${{ github.workspace }}/main/fuzzer
+          ./build_images.sh
           
       - name: Check images
         run: docker images
