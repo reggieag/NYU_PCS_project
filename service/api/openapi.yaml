@@ -15,7 +15,7 @@ paths:
             application/json:
               schema:
                 items:
-                  $ref: '#components/schema/DataOutput'
+                  $ref: '#/components/schemas/DataOutput'
                 type: array
           description: JSON array of data types
       summary: Returns a list of data.
@@ -41,7 +41,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#components/schema/DataOutput'
+                $ref: '#/components/schemas/DataOutput'
           description: Return data
       summary: Add a new entry
   /data/{dataId}:
@@ -78,7 +78,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#components/schema/DataOutput'
+                $ref: '#/components/schemas/DataOutput'
           description: Data of data
         "400":
           description: Input was not a valid id
@@ -112,7 +112,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#components/schema/DataOutput'
+                $ref: '#/components/schemas/DataOutput'
           description: Data updated
         "400":
           description: Input was not a valid id
