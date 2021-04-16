@@ -13,6 +13,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"strings"
 )
 
 // DefaultApiService is a service that implents the logic for the DefaultApiServicer
@@ -31,6 +32,7 @@ func NewDefaultApiService(db ToyAPIDB) DefaultApiServicer {
 
 // DataDataIdDelete - Delete data by id
 func (s *DefaultApiService) DataDataIdDelete(ctx context.Context, dataId int32) (ImplResponse, error) {
+	isUserAuthorized(ctx, []string{})
 	log.Printf("deleting row with id %d", dataId)
 	err := s.db.DeleteDataByID(ctx, int(dataId))
 	if err != nil {
@@ -43,6 +45,7 @@ func (s *DefaultApiService) DataDataIdDelete(ctx context.Context, dataId int32) 
 
 // DataDataIdGet - Get data by id
 func (s *DefaultApiService) DataDataIdGet(ctx context.Context, dataId int32) (ImplResponse, error) {
+	isUserAuthorized(ctx, []string{})
 	log.Printf("getting row with id %d", dataId)
 	resp, err := s.db.GetDataByID(ctx, int(dataId))
 	if err != nil {
@@ -55,6 +58,7 @@ func (s *DefaultApiService) DataDataIdGet(ctx context.Context, dataId int32) (Im
 
 // DataDataIdPost - Update data by id
 func (s *DefaultApiService) DataDataIdPost(ctx context.Context, dataId int32, inlineObject1 InlineObject1) (ImplResponse, error) {
+	isUserAuthorized(ctx, []string{})
 	log.Printf("updating row with id %d with name %s, quantity %d", dataId, inlineObject1.Name, inlineObject1.Quantity)
 	if inlineObject1.Name == "" && inlineObject1.Quantity == 0 {
 		log.Printf("both name and quantity are invalid")
@@ -72,6 +76,7 @@ func (s *DefaultApiService) DataDataIdPost(ctx context.Context, dataId int32, in
 
 // DataGet - Returns a list of data.
 func (s *DefaultApiService) DataGet(ctx context.Context) (ImplResponse, error) {
+	isUserAuthorized(ctx, []string{})
 	log.Printf("receiving get all data request")
 	resp, err := s.db.GetData(ctx)
 	if err != nil {
@@ -84,6 +89,7 @@ func (s *DefaultApiService) DataGet(ctx context.Context) (ImplResponse, error) {
 
 // DataPost - Add a new entry
 func (s *DefaultApiService) DataPost(ctx context.Context, inlineObject InlineObject) (ImplResponse, error) {
+	isUserAuthorized(ctx, []string{})
 	log.Printf("receiving add data with name %s quantity %d", inlineObject.Name, inlineObject.Quantity)
 	if inlineObject.Name == "" && inlineObject.Quantity == 0 {
 		log.Printf("both fields are 'null'. Bad request.")
@@ -98,4 +104,10 @@ func (s *DefaultApiService) DataPost(ctx context.Context, inlineObject InlineObj
 	log.Printf("data added")
 
 	return Response(http.StatusOK, resp), nil
+}
+
+func isUserAuthorized(ctx context.Context, scopes []string) bool {
+	userScopes := getScopes(ctx)
+	log.Printf("user scopes: %s", strings.Join(userScopes, ","))
+	return true
 }

@@ -39,10 +39,16 @@ func main() {
 	}
 	defer db.Close()
 
-	authUrl := os.Getenv("OAUTH_URL")
+	authHost := os.Getenv("OAUTH_HOST")
+	authPortStr := os.Getenv("OAUTH_PORT")
+	authPort, err := strconv.Atoi(authPortStr)
+	if err != nil {
+		log.Fatalf("unable to parse auth server port: %s", err)
+	}
+	authPath := os.Getenv("OAUTH_INTROSPECT_PATH")
 
 	DefaultAPIService := openapi.NewDefaultApiService(db)
-	DefaultAPIController := openapi.NewDefaultApiController(DefaultAPIService, openapi.AuthMiddleware(authUrl))
+	DefaultAPIController := openapi.NewDefaultApiController(DefaultAPIService, openapi.AuthMiddleware(authHost, authPath, authPort))
 	pingHandler := openapi.NewPingController()
 
 	router := openapi.NewRouter(DefaultAPIController, pingHandler)
