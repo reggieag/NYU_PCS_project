@@ -29,7 +29,7 @@ func NewPingController() Router {
 }
 
 type statusResponse struct {
-	Ok bool
+	Ok bool `json:"ok"`
 }
 
 func pingHandlerFunc(w http.ResponseWriter, r *http.Request) {

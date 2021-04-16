@@ -125,3 +125,19 @@ paths:
           description: Input was not a valid id
         '404':
           description: Data with specified id not found
+  /ping:
+    get:
+      summary: Healthcheck response
+      description: If service is up and running, this will never fail
+      responses:
+        '200':
+          description: Struct with some status info
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+
+
