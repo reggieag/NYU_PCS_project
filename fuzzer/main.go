@@ -75,17 +75,20 @@ func generateAPIURL(config *Config) string {
 
 func runModule(moduleName, control string, module moduleFunc, moduleConfig interface{}, apiUrl, apiSchema string) error {
 	defer func() {
-		log.Printf("Module run complete. Shutting down current API/DB\n")
+		log.Println("Module run complete")
+		log.Println("Calling control script with argument 'stop'")
 		err := utilities.StopAPI(control)
 		if err != nil {
 			log.Println(err)
 		}
 	}()
-	log.Printf("Running module %s\nStarting API/DB for run\n", moduleName)
+	log.Printf("Running module %s", moduleName)
+	log.Println("Calling control script with argument 'start' for run:")
 	if err := utilities.StartAPI(control); err != nil {
 		log.Printf("unable to run control script to start API: %s", err)
 		return err
 	}
+	log.Println("Control script finished")
 	// This can in theory be used to set global timeout limits
 	ctx := context.Background()
 	err := module(ctx,
