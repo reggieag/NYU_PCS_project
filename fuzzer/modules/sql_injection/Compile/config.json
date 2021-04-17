@@ -1,0 +1,18 @@
+{
+  "SwaggerSpecFilePath": [
+    "/mnt/./service/api/openapi.yaml"
+  ],
+  "GrammarOutputDirectoryPath": "/mnt/Compile",
+  "CustomDictionaryFilePath": "/mnt/Compile/defaultDict.json",
+  "IncludeOptionalParameters": true,
+  "UseQueryExamples": true,
+  "UseBodyExamples": true,
+  "DiscoverExamples": false,
+  "ExamplesDirectory": "",
+  "DataFuzzing": true,
+  "ReadOnlyFuzz": false,
+  "ResolveQueryDependencies": true,
+  "ResolveBodyDependencies": true,
+  "UseRefreshableToken": true,
+  "AllowGetProducers": false
+}

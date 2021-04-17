@@ -1,0 +1,34 @@
+{
+  "/data/{dataId}": {
+    "DELETE": {
+      "Path": [
+        {
+          "producer_endpoint": "/data",
+          "producer_method": "POST",
+          "producer_resource_name": "dataId",
+          "consumer_param": "dataId"
+        }
+      ]
+    },
+    "GET": {
+      "Path": [
+        {
+          "producer_endpoint": "/data",
+          "producer_method": "POST",
+          "producer_resource_name": "dataId",
+          "consumer_param": "dataId"
+        }
+      ]
+    },
+    "POST": {
+      "Path": [
+        {
+          "producer_endpoint": "/data",
+          "producer_method": "POST",
+          "producer_resource_name": "dataId",
+          "consumer_param": "dataId"
+        }
+      ]
+    }
+  }
+}
