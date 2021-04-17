@@ -1,0 +1,2 @@
+## api module
+The API module contains objects and functions that represent valid API requests. There are functions in this module that translate compiled OpenAPI grammar into concrete API strings that can be executed against a running instance of the API specified.
