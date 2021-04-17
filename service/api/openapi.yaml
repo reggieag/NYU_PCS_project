@@ -119,6 +119,17 @@ paths:
         "404":
           description: Data with specified id not found
       summary: Update data by id
+  /ping:
+    get:
+      description: If service is up and running, this will never fail
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PingOutput'
+          description: Return data for ping
+      summary: Healthcheck response
 components:
   requestBodies:
     inline_object_1:
@@ -163,3 +174,7 @@ components:
         quantity:
           type: integer
       type: object
+    PingOutput:
+      properties:
+        ok:
+          type: boolean

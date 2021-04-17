@@ -8,15 +8,12 @@ import (
 
 type Config struct {
 	Runner struct {
-		ComposeFile string `yaml:"compose_file"`
-		Database    struct {
-			Name     string
-			Username string
-			Password string
-			Port     int
-		}
-		API struct {
-			Port int
+		ControlScript string `yaml:"control"`
+		API           struct {
+			Schema     string
+			Host       string
+			Port       int
+			HTTPScheme string `yaml:"http_scheme"`
 		}
 	}
 	Modules map[string]interface{}

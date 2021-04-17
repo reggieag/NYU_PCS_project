@@ -1,13 +1,16 @@
 runner:
-  compose_file: "../docker-compose.yml"
-  database:
-    name: "toy_api"
-    username: "api_user"
-    password: "password"
-    port: 5432
+  control: "../control.sh"
   api:
+    http_scheme: "http"
+    host: 127.0.0.1
     port: 8080
+    schema: "../service/api/openapi.yaml"
 
 modules:
   sql_injection:
-    api_schema: "../service/api/openapi.yaml"
+    database:
+      name: "toy_api"
+      username: "api_user"
+      password: "password"
+      host: 127.0.0.1
+      port: 5432
