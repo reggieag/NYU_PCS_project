@@ -6,6 +6,7 @@ info:
 servers:
 - url: /
 paths:
+
   /data:
     get:
       description: Basically should return entire DB
@@ -19,6 +20,9 @@ paths:
                 type: array
           description: JSON array of data types
       summary: Returns a list of data.
+      security:
+        - standard: [read, all]
+
     post:
       description: Add a new row to the db
       requestBody:
@@ -44,6 +48,9 @@ paths:
                 $ref: '#/components/schemas/DataOutput'
           description: Return data
       summary: Add a new entry
+      security:
+        - standard: [write]
+
   /data/{dataId}:
     delete:
       parameters:
@@ -63,6 +70,9 @@ paths:
         "404":
           description: Data with specified id not found
       summary: Delete data by id
+      security:
+        - standard: [write]
+
     get:
       parameters:
       - description: ID of data
@@ -85,6 +95,9 @@ paths:
         "404":
           description: Data with specified id not found
       summary: Get data by id
+      security:
+        - standard: [write]
+
     post:
       parameters:
       - description: ID of data
@@ -119,6 +132,9 @@ paths:
         "404":
           description: Data with specified id not found
       summary: Update data by id
+      security:
+        - standard: [write]
+
   /ping:
     get:
       description: If service is up and running, this will never fail
@@ -130,7 +146,22 @@ paths:
                 $ref: '#/components/schemas/PingOutput'
           description: Return data for ping
       summary: Healthcheck response
+
 components:
+
+  securitySchemes:
+    standard:
+      type: oauth2
+      description: Use OAuth2 with client credentials flow
+      flows:
+        clientCredentials:
+          tokenUrl: http://127.0.0.1:9096/token
+          scopes:
+            read: read data on a per id basis 
+            write: modify data on a per id basis
+            all: permission client for database wide operations
+
+
   requestBodies:
     inline_object_1:
       content:
