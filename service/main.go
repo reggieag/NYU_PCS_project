@@ -29,6 +29,7 @@ func main() {
 	dbName := os.Getenv("POSTGRES_DB")
 	dbPortStr := os.Getenv("POSTGRES_PORT")
 	dbPort, err := strconv.Atoi(dbPortStr)
+
 	if err != nil {
 		log.Fatalf("unable to parse DB port: %s", err)
 	}
@@ -38,10 +39,19 @@ func main() {
 	}
 	defer db.Close()
 
-	DefaultAPIService := openapi.NewDefaultApiService(db)
-	DefaultAPIController := openapi.NewDefaultApiController(DefaultAPIService)
+	authHost := os.Getenv("OAUTH_HOST")
+	authPortStr := os.Getenv("OAUTH_PORT")
+	authPort, err := strconv.Atoi(authPortStr)
+	if err != nil {
+		log.Fatalf("unable to parse auth server port: %s", err)
+	}
+	authPath := os.Getenv("OAUTH_INTROSPECT_PATH")
 
-	router := openapi.NewRouter(DefaultAPIController)
+	DefaultAPIService := openapi.NewDefaultApiService(db)
+	DefaultAPIController := openapi.NewDefaultApiController(DefaultAPIService, openapi.AuthMiddleware(authHost, authPath, authPort))
+	pingHandler := openapi.NewPingController()
+
+	router := openapi.NewRouter(DefaultAPIController, pingHandler)
 
 	log.Printf("service starting on port 8080")
 
@@ -50,7 +60,7 @@ func main() {
 }
 
 func retryDbConnection(dbHost string, dbPort int, dbUser string, dbPassword string, dbName string) (*openapi.APIDatabase, error) {
-	const maxRetries = 3
+	const maxRetries = 5
 	const timeoutInterval = time.Second
 	var err error
 	var db *openapi.APIDatabase

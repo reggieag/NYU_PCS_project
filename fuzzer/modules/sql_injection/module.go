@@ -2,9 +2,7 @@ package sql_injection
 
 import (
 	"context"
-	"fmt"
 	"fuzzer/utilities"
-	"io/ioutil"
 	"log"
 	"strconv"
 
@@ -14,25 +12,29 @@ import (
 const dockerName = "fuzzer-modules-sql_injection"
 
 type sqlInjectionConfig struct {
-	APISchema string `yaml:"api_schema"`
+	Database struct {
+		Name     string
+		Username string
+		Password string
+		Port     int
+		Host     string
+	}
 }
 
-func SQLInjectorModule(ctx context.Context, moduleConfig interface{}, apiPort, dbPort int, dbName, dbUsername, dbPassword string) error {
+func SQLInjectorModule(ctx context.Context, moduleConfig interface{}, apiUrl, apiSchema, clients string) error {
 	// Kinda jank but works..
 	data, _ := yaml.Marshal(moduleConfig)
 	config := &sqlInjectionConfig{}
 	yaml.Unmarshal(data, config)
-	schemaData, err := ioutil.ReadFile(config.APISchema)
-	if err != nil {
-		return fmt.Errorf("unable to read schema file: %w", err)
-	}
 	env := map[string]string{
-		"APIPort":    strconv.Itoa(apiPort),
-		"DBPort":     strconv.Itoa(dbPort),
-		"DBName":     dbName,
-		"DBUsername": dbUsername,
-		"DBPassword": dbPassword,
-		"APISchema":  string(schemaData),
+		"API_URL":     apiUrl,
+		"DB_PORT":     strconv.Itoa(config.Database.Port),
+		"DB_NAME":     config.Database.Name,
+		"DB_USERNAME": config.Database.Username,
+		"DB_PASSWORD": config.Database.Password,
+		"DB_HOST":     config.Database.Host,
+		"API_SCHEMA":  apiSchema,
+		"API_CLIENTS": clients,
 	}
 	log.Printf("Starting SQL Injection Module Container\n")
 	return utilities.RunImage(dockerName, env)

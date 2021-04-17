@@ -2,13 +2,21 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"fuzzer/modules/sql_injection"
 	"fuzzer/utilities"
+	"io/ioutil"
 	"log"
+	"net/url"
 	"os"
 )
 
-type moduleFunc func(ctx context.Context, moduleConfig interface{}, apiPort, dbPort int, dbName, dbUsername, dbPassword string) error
+type moduleFunc func(ctx context.Context, moduleConfig interface{}, apiUrl, apiSchema, clients string) error
+
+type failedModule struct {
+	moduleName string
+	err        error
+}
 
 var availableModules = map[string]moduleFunc{
 	"sql_injection": sql_injection.SQLInjectorModule,
@@ -17,27 +25,37 @@ var availableModules = map[string]moduleFunc{
 func main() {
 	args := os.Args
 	if len(args) < 2 {
-		log.Fatalf("No config file found. Existing\n")
+		log.Fatalf("No config file found. Exiting\n")
 	}
 	fileName := args[1]
-	config, err := ParseConfig(fileName)
+	config, err := parseConfig(fileName)
 	if err != nil {
 		log.Fatalf("Unable to read config: %s", err)
 	}
-	type failedModule struct {
-		moduleName string
-		err        error
+
+	apiSchema, err := readSchema(config.Runner.API.Schema)
+	if err != nil {
+		log.Fatalf("Unable to read schema: %s", err)
 	}
+	apiURL := generateAPIURL(config)
+	log.Printf("Using API URL: %s", apiURL)
+
+	log.Printf("Reading clients file")
+	clients, err := readClientFile(config.Runner.API.Security.ClientsFile)
+	if err != nil {
+		log.Fatalf("Unable to read clients: %s", err)
+	}
+
 	var failedModules []failedModule
-	for name := range config.Modules {
-		moduleFunc, ok := availableModules[name]
+	for _, module := range config.ModulesParsed {
+		moduleFunc, ok := availableModules[module.Name]
 		if !ok {
-			log.Printf("Module not found: %s. Skipping\n", name)
+			log.Printf("Module not found: %s. Skipping\n", module.Name)
 			continue
 		}
-		err := runModule(name, moduleFunc, config)
+		err := runModule(module.Name, config.Runner.ControlScript, moduleFunc, module.Data, apiURL, apiSchema, clients)
 		if err != nil {
-			failedModules = append(failedModules, failedModule{name, err})
+			failedModules = append(failedModules, failedModule{module.Name, err})
 		}
 	}
 	if len(failedModules) != 0 {
@@ -48,25 +66,43 @@ func main() {
 	}
 }
 
-func runModule(moduleName string, module moduleFunc, config *Config) error {
-	log.Printf("Running module %s\nStarting API/DB for run\n", moduleName)
-	utilities.StartAPI(config.Runner.ComposeFile)
+func readSchema(file string) (string, error) {
+	schema, err := ioutil.ReadFile(file)
+	return string(schema), err
+}
+
+func generateAPIURL(config *Config) string {
+	url := url.URL{
+		Scheme: config.Runner.API.HTTPScheme,
+		Host:   fmt.Sprintf("%s:%d", config.Runner.API.Host, config.Runner.API.Port),
+	}
+	return url.String()
+}
+
+func runModule(moduleName, control string, module moduleFunc, moduleConfig interface{}, apiUrl, apiSchema, clients string) error {
 	defer func() {
-		log.Printf("Module run complete. Shutting down current API/DB\n")
-		err := utilities.StopAPI(config.Runner.ComposeFile)
+		log.Println("Module run complete")
+		log.Println("Calling control script with argument 'stop'")
+		err := utilities.StopAPI(control)
 		if err != nil {
 			log.Println(err)
 		}
 	}()
+	log.Printf("Running module %s", moduleName)
+	log.Println("Calling control script with argument 'start' for run:")
+	if err := utilities.StartAPI(control); err != nil {
+		log.Printf("unable to run control script to start API: %s", err)
+		return err
+	}
+	log.Println("Control script finished")
 	// This can in theory be used to set global timeout limits
 	ctx := context.Background()
 	err := module(ctx,
-		config.Modules[moduleName],
-		config.Runner.API.Port,
-		config.Runner.Database.Port,
-		config.Runner.Database.Name,
-		config.Runner.Database.Username,
-		config.Runner.Database.Password)
+		moduleConfig,
+		apiUrl,
+		apiSchema,
+		clients,
+	)
 	if err != nil {
 		log.Printf("Received error from runner: %s", err)
 	}

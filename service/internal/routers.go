@@ -16,6 +16,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+
 	"github.com/gorilla/mux"
 )
 
@@ -33,22 +34,27 @@ type Routes []Route
 // Router defines the required methods for retrieving api routes
 type Router interface {
 	Routes() Routes
+	Middleware() func(http.Handler) http.Handler
 }
 
 // NewRouter creates a new router for any number of api routers
 func NewRouter(routers ...Router) *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 	for _, api := range routers {
+		subRouter := router.NewRoute().Subrouter()
 		for _, route := range api.Routes() {
 			var handler http.Handler
 			handler = route.HandlerFunc
 			handler = Logger(handler, route.Name)
 
-			router.
+			subRouter.
 				Methods(route.Method).
 				Path(route.Pattern).
 				Name(route.Name).
 				Handler(handler)
+		}
+		if middleware := api.Middleware(); middleware != nil {
+			subRouter.Use(middleware)
 		}
 	}
 
@@ -122,7 +128,6 @@ func readFileHeaderToTempFile(fileHeader *multipart.FileHeader) (*os.File, error
 
 	return file, nil
 }
-
 
 // parseInt64Parameter parses a sting parameter to an int64
 func parseInt64Parameter(param string) (int64, error) {
