@@ -1,0 +1,12 @@
+clients:
+  - client_id: musashi 
+    client_secret: udon 
+    scopes:
+      - read 
+      - write 
+
+  - client_id: okita 
+    client_secret: tuberculosis
+    scopes:
+      - read
+

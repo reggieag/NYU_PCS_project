@@ -11,7 +11,7 @@ import (
 	"os"
 )
 
-type moduleFunc func(ctx context.Context, moduleConfig interface{}, apiUrl string, apiSchema string) error
+type moduleFunc func(ctx context.Context, moduleConfig interface{}, apiUrl, apiSchema, clients string) error
 
 type failedModule struct {
 	moduleName string
@@ -25,10 +25,10 @@ var availableModules = map[string]moduleFunc{
 func main() {
 	args := os.Args
 	if len(args) < 2 {
-		log.Fatalf("No config file found. Existing\n")
+		log.Fatalf("No config file found. Exiting\n")
 	}
 	fileName := args[1]
-	config, err := ParseConfig(fileName)
+	config, err := parseConfig(fileName)
 	if err != nil {
 		log.Fatalf("Unable to read config: %s", err)
 	}
@@ -40,16 +40,22 @@ func main() {
 	apiURL := generateAPIURL(config)
 	log.Printf("Using API URL: %s", apiURL)
 
+	log.Printf("Reading clients file")
+	clients, err := readClientFile(config.Runner.API.Security.ClientsFile)
+	if err != nil {
+		log.Fatalf("Unable to read clients: %s", err)
+	}
+
 	var failedModules []failedModule
-	for name := range config.Modules {
-		moduleFunc, ok := availableModules[name]
+	for _, module := range config.ModulesParsed {
+		moduleFunc, ok := availableModules[module.Name]
 		if !ok {
-			log.Printf("Module not found: %s. Skipping\n", name)
+			log.Printf("Module not found: %s. Skipping\n", module.Name)
 			continue
 		}
-		err := runModule(name, config.Runner.ControlScript, moduleFunc, config.Modules[name], apiURL, apiSchema)
+		err := runModule(module.Name, config.Runner.ControlScript, moduleFunc, module.Data, apiURL, apiSchema, clients)
 		if err != nil {
-			failedModules = append(failedModules, failedModule{name, err})
+			failedModules = append(failedModules, failedModule{module.Name, err})
 		}
 	}
 	if len(failedModules) != 0 {
@@ -73,7 +79,7 @@ func generateAPIURL(config *Config) string {
 	return url.String()
 }
 
-func runModule(moduleName, control string, module moduleFunc, moduleConfig interface{}, apiUrl, apiSchema string) error {
+func runModule(moduleName, control string, module moduleFunc, moduleConfig interface{}, apiUrl, apiSchema, clients string) error {
 	defer func() {
 		log.Println("Module run complete")
 		log.Println("Calling control script with argument 'stop'")
@@ -95,6 +101,7 @@ func runModule(moduleName, control string, module moduleFunc, moduleConfig inter
 		moduleConfig,
 		apiUrl,
 		apiSchema,
+		clients,
 	)
 	if err != nil {
 		log.Printf("Received error from runner: %s", err)

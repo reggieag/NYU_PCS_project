@@ -21,7 +21,7 @@ type sqlInjectionConfig struct {
 	}
 }
 
-func SQLInjectorModule(ctx context.Context, moduleConfig interface{}, apiUrl string, apiSchema string) error {
+func SQLInjectorModule(ctx context.Context, moduleConfig interface{}, apiUrl, apiSchema, clients string) error {
 	// Kinda jank but works..
 	data, _ := yaml.Marshal(moduleConfig)
 	config := &sqlInjectionConfig{}
@@ -34,6 +34,7 @@ func SQLInjectorModule(ctx context.Context, moduleConfig interface{}, apiUrl str
 		"DB_PASSWORD": config.Database.Password,
 		"DB_HOST":     config.Database.Host,
 		"API_SCHEMA":  apiSchema,
+		"API_CLIENTS": clients,
 	}
 	log.Printf("Starting SQL Injection Module Container\n")
 	return utilities.RunImage(dockerName, env)

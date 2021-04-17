@@ -5,12 +5,16 @@ runner:
     host: 127.0.0.1
     port: 8080
     schema: "../service/api/openapi.yaml"
+    security:
+      clients_file: "../auth_service/clients.yml"
 
 modules:
-  sql_injection:
-    database:
-      name: "toy_api"
-      username: "api_user"
-      password: "password"
-      host: 127.0.0.1
-      port: 5432
+  - sql_injection:
+      database:
+        name: "toy_api"
+        username: "api_user"
+        password: "password"
+        host: 127.0.0.1
+        port: 5432
+  - oauth2_scope:
+      type: client_credentials

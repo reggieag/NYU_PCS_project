@@ -3,16 +3,28 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/go-oauth2/oauth2/v4/errors"
 	"github.com/go-oauth2/oauth2/v4/manage"
-	"github.com/go-oauth2/oauth2/v4/models"
 	"github.com/go-oauth2/oauth2/v4/server"
 	"github.com/go-oauth2/oauth2/v4/store"
 )
 
 func main() {
+	args := os.Args
+	if len(args) < 2 {
+		log.Fatalf("No client file found. Exiting\n")
+	}
+	fileName := args[1]
+
+	config, err := readConfig(fileName)
+	if err != nil {
+		log.Fatal("Unable to parse config")
+	}
+	log.Printf("clients: %+v", config)
+
 	manager := manage.NewDefaultManager()
 	// token memory store
 	tokenStore, err := store.NewMemoryTokenStore()
@@ -26,11 +38,7 @@ func main() {
 
 	// client memory store
 	clientStore := store.NewClientStore()
-	clientStore.Set("000000", &models.Client{
-		ID:     "000000",
-		Secret: "999999",
-		Domain: "http://localhost",
-	})
+	createClients(clientStore, config)
 	manager.MapClientStorage(clientStore)
 
 	srv := server.NewDefaultServer(manager)
