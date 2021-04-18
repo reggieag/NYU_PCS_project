@@ -1,5 +1,4 @@
 import yaml
-import logging
 
 
 class BadClientConfig(Exception):
@@ -33,11 +32,11 @@ class Client:
 
 class Clients:
     """
-    Meta class to manipulate lists of clients, such as creating clients from 
+    Meta class to manipulate lists of clients, such as creating clients from
     configuration files, etc
     """
 
-    def __init__(self, clients_list=None):
+    def __init__(self, clients_list):
         self._clients = []
         if clients_list is not None:
             self.parse_clients_list(clients_list)
@@ -54,9 +53,9 @@ class Clients:
             try:
                 self._clients.append(
                     Client(client['client_id'], client['client_secret'], client['scopes']))
-            except KeyError:
+            except KeyError as e:
                 raise BadClientConfig(
-                    message='{} is missing information'.format(client))
+                    message='{} is missing information'.format(client)) from e
 
     @property
     def clients(self):

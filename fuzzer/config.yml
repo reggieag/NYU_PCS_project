@@ -9,6 +9,8 @@ runner:
       clients_file: "../auth_service/clients.yml"
 
 modules:
+  - oauth2_scopes:
+      exhaustive: true
   - sql_injection:
       database:
         name: "toy_api"
@@ -16,5 +18,3 @@ modules:
         password: "password"
         host: 127.0.0.1
         port: 5432
-  - oauth2_scopes:
-      type: client_credentials
