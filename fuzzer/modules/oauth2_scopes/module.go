@@ -11,6 +11,7 @@ import (
 
 type oauth2ScopesConfig struct {
 	Exhaustive bool `yaml:"exhaustive"`
+	ForceHTTP  bool `yaml:"force_http"`
 }
 
 const dockerName = "fuzzer-modules-oauth2_scopes"
@@ -24,6 +25,7 @@ func OAuth2ScopesModule(ctx context.Context, moduleConfig interface{}, apiUrl, a
 		"API_SCHEMA":  apiSchema,
 		"API_CLIENTS": clients,
 		"EXHAUSTIVE":  strconv.FormatBool(config.Exhaustive),
+		"FORCE_HTTP":  strconv.FormatBool(config.ForceHTTP),
 	}
 	log.Printf("Starting OAuth2 Scopes Module Container\n")
 	return utilities.RunImage(dockerName, env)
