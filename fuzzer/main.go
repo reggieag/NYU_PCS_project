@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"fuzzer/modules/oauth2_scopes"
 	"fuzzer/modules/sql_injection"
 	"fuzzer/utilities"
 	"io/ioutil"
@@ -20,6 +21,7 @@ type failedModule struct {
 
 var availableModules = map[string]moduleFunc{
 	"sql_injection": sql_injection.SQLInjectorModule,
+	"oauth2_scopes": oauth2_scopes.OAuth2ScopesModule,
 }
 
 func main() {

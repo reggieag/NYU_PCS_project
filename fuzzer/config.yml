@@ -16,5 +16,5 @@ modules:
         password: "password"
         host: 127.0.0.1
         port: 5432
-  - oauth2_scope:
+  - oauth2_scopes:
       type: client_credentials
