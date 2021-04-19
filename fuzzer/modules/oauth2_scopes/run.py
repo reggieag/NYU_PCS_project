@@ -1,4 +1,3 @@
-import time
 import os
 import sys
 from clients import Clients
@@ -35,14 +34,19 @@ class Run:
                 self._security_schemes.schemes))
         print('Starting')
         for run in self._runs:
-            print('Starting run with client id: {}'.format(run.id))
+            print(
+                'Starting run with client id: {} secret: {}'.format(
+                    run.id, run.secret))
             print('Using scopes {}'.format(run.scopes))
             oauth_session = OAuth2Requests(self._security_schemes)
             try:
                 # TODO: Read from tree, and fill in security scheme dynamically
                 request = oauth_session.create_request(run, 'standard')
-                print(request[0])
-                print(request[1])
+                print('token: {}'.format(request[0]))
+                # TODO: Read this from RESTler grammar
+                r = request[1].get('http://127.0.0.1:8080/data')
+                print('response: {}'.r.json())
+                # TODO: Validate scope and check response
             except Exception as e:
                 print(e)
 
