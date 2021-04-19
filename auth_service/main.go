@@ -42,7 +42,6 @@ func main() {
 	manager.MapClientStorage(clientStore)
 
 	srv := server.NewDefaultServer(manager)
-	srv.SetAllowGetAccessRequest(true)
 	srv.SetClientInfoHandler(server.ClientFormHandler)
 
 	srv.SetInternalErrorHandler(func(err error) (re *errors.Response) {
