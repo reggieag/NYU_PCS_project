@@ -45,7 +45,7 @@ class Run:
                 print('token: {}'.format(request[0]))
                 # TODO: Read this from RESTler grammar
                 r = request[1].get('http://127.0.0.1:8080/data')
-                print('response: {}'.r.json())
+                print('response: {}'.format(r.json()))
                 # TODO: Validate scope and check response
             except Exception as e:
                 print(e)
