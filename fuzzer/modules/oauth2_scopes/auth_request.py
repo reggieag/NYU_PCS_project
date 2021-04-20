@@ -2,12 +2,12 @@ from oauthlib.oauth2 import BackendApplicationClient
 from requests_oauthlib import OAuth2Session
 
 
-class OAuth2RequestsException(Exception):
+class AuthRequestException(Exception):
     def __init__(message=""):
         super().__init__(message)
 
 
-class OAuth2Requests:
+class AuthRequest:
     """
     Wrapper class to handle OAuth2 token access logic
     """
@@ -46,4 +46,4 @@ class OAuth2Requests:
                 include_client_id=True)
             return (token, oauth)
         except KeyError as e:
-            raise OAuth2RequestsException from e
+            raise AuthRequestException from e

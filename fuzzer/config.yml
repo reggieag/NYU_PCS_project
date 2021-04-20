@@ -11,6 +11,7 @@ runner:
 modules:
   - oauth2_scopes:
       exhaustive: true
+      force_http: true
   - sql_injection:
       database:
         name: "toy_api"
