@@ -3,7 +3,7 @@ import sys
 from clients import Clients
 from security import SecuritySchemes
 from run_generator import Generator
-from oauth import OAuth2Requests
+from auth_request import AuthRequest
 
 
 class Run:
@@ -38,7 +38,7 @@ class Run:
                 'Starting run with client id: {} secret: {}'.format(
                     run.id, run.secret))
             print('Using scopes {}'.format(run.scopes))
-            oauth_session = OAuth2Requests(self._security_schemes)
+            oauth_session = AuthRequest(self._security_schemes)
             try:
                 # TODO: Read from tree, and fill in security scheme dynamically
                 request = oauth_session.create_request(run, 'standard')
