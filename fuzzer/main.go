@@ -3,26 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"fuzzer/modules/oauth2_scopes"
-	"fuzzer/modules/sql_injection"
+	"fuzzer/pkg/runner"
 	"fuzzer/utilities"
 	"io/ioutil"
 	"log"
 	"net/url"
 	"os"
 )
-
-type moduleFunc func(ctx context.Context, moduleConfig interface{}, apiUrl, apiSchema, clients string) error
-
-type failedModule struct {
-	moduleName string
-	err        error
-}
-
-var availableModules = map[string]moduleFunc{
-	"sql_injection": sql_injection.SQLInjectorModule,
-	"oauth2_scopes": oauth2_scopes.OAuth2ScopesModule,
-}
 
 func main() {
 	args := os.Args
@@ -48,22 +35,25 @@ func main() {
 		log.Fatalf("Unable to read clients: %s", err)
 	}
 
-	var failedModules []failedModule
-	for _, module := range config.ModulesParsed {
-		moduleFunc, ok := availableModules[module.Name]
-		if !ok {
-			log.Printf("Module not found: %s. Skipping\n", module.Name)
-			continue
-		}
-		err := runModule(module.Name, config.Runner.ControlScript, moduleFunc, module.Data, apiURL, apiSchema, clients)
-		if err != nil {
-			failedModules = append(failedModules, failedModule{module.Name, err})
+	cliRunner := runner.NewRunner(apiSchema, apiURL, clients, config.ModulesParsed)
+
+	ctx := context.Background()
+
+	startFunc := createStart(config.Runner.ControlScript)
+	stopFunc := createStop(config.Runner.ControlScript)
+
+	moduleResults := cliRunner.Execute(ctx, startFunc, stopFunc)
+
+	var hasErrored bool
+	for _, result := range moduleResults {
+		if result.Error != nil {
+			log.Printf("Module %s received error: %s", result.Module.Name, result.Error)
+			hasErrored = true
+		} else {
+			log.Printf("Module %s ran succesfully", result.Module.Name)
 		}
 	}
-	if len(failedModules) != 0 {
-		for i := range failedModules {
-			log.Printf("%s failed: %s\n", failedModules[i].moduleName, failedModules[i].err)
-		}
+	if hasErrored {
 		os.Exit(1)
 	}
 }
@@ -81,32 +71,29 @@ func generateAPIURL(config *Config) string {
 	return url.String()
 }
 
-func runModule(moduleName, control string, module moduleFunc, moduleConfig interface{}, apiUrl, apiSchema, clients string) error {
-	defer func() {
-		log.Println("Module run complete")
+func createStart(control string) runner.StartSetup {
+	return func(ctx context.Context, module runner.ModuleConfig) error {
+		log.Printf("Running module %s", module.Name)
+		log.Println("Calling control script with argument 'start' for run:")
+		if err := utilities.StartAPI(control); err != nil {
+			log.Printf("unable to run control script to start API: %s", err)
+			return err
+		}
+		return nil
+	}
+}
+
+func createStop(control string) runner.StopTeardown {
+	return func(ctx context.Context, module runner.ModuleConfig, runError error) {
+		if runError != nil {
+			log.Printf("Module run complete with error: %s", runError)
+		} else {
+			log.Printf("Module run complete")
+		}
 		log.Println("Calling control script with argument 'stop'")
 		err := utilities.StopAPI(control)
 		if err != nil {
 			log.Println(err)
 		}
-	}()
-	log.Printf("Running module %s", moduleName)
-	log.Println("Calling control script with argument 'start' for run:")
-	if err := utilities.StartAPI(control); err != nil {
-		log.Printf("unable to run control script to start API: %s", err)
-		return err
 	}
-	log.Println("Control script finished")
-	// This can in theory be used to set global timeout limits
-	ctx := context.Background()
-	err := module(ctx,
-		moduleConfig,
-		apiUrl,
-		apiSchema,
-		clients,
-	)
-	if err != nil {
-		log.Printf("Received error from runner: %s", err)
-	}
-	return err
 }

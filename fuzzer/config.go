@@ -1,15 +1,11 @@
 package main
 
 import (
+	"fuzzer/pkg/runner"
 	"io/ioutil"
 
 	"gopkg.in/yaml.v2"
 )
-
-type ModuleConfig struct {
-	Name string
-	Data interface{}
-}
 
 type Config struct {
 	Runner struct {
@@ -25,7 +21,7 @@ type Config struct {
 		}
 	}
 	Modules       []map[string]interface{} `yaml:"modules"`
-	ModulesParsed []ModuleConfig
+	ModulesParsed []runner.ModuleConfig
 }
 
 func parseConfig(file string) (*Config, error) {
@@ -37,10 +33,10 @@ func parseConfig(file string) (*Config, error) {
 	if err2 := yaml.Unmarshal(data, config); err2 != nil {
 		return nil, err2
 	}
-	config.ModulesParsed = make([]ModuleConfig, 0, len(config.Modules))
+	config.ModulesParsed = make([]runner.ModuleConfig, 0, len(config.Modules))
 	for i := range config.Modules {
 		for key, data := range config.Modules[i] {
-			config.ModulesParsed = append(config.ModulesParsed, ModuleConfig{Name: key, Data: data})
+			config.ModulesParsed = append(config.ModulesParsed, runner.ModuleConfig{Name: key, Data: data})
 			break
 		}
 	}
