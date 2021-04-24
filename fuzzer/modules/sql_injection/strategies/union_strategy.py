@@ -12,8 +12,7 @@ class UnionAttackVulnerabilityException:
 
 def union_attack_test(host, grammar):
     """
-    This test is run against lab6 as a proof of concept that we can automate
-    detecting a particular SQL injection attack that exploits string interpolation.
+    This test attempts a union attack against an endpoint.
 
     :param host: The API host. Unused for this particular test.
     :param grammar: Restler grammar. Unused for this particular test.
@@ -21,11 +20,16 @@ def union_attack_test(host, grammar):
     """
     attack_uuid = uuid.uuid4()
     attack_param = "' union select {uuid} --".format(uuid=attack_uuid)
-    for url, data in generate_api_calls(attack_param):
-        res = requests.post(url, data=data)
+    for url, data, method in generate_api_calls(attack_param):
+        if method == 'Post':
+            res = requests.post(url, data=data)
+        elif method == 'Get':
+            res = requests.get(url, data=data)
+        else:
+            continue
 
         # No we check if we were able to insert the uuid into the result. If we were
         # we know that a sql injection attack happened since there is almost no chance
         # that the uuid we just generated is going to be constructed by the server naturally.
-        if str(attack_uuid) in res.text:
+        if res.status_code == 200 and str(attack_uuid) in res.text:
             raise UnionAttackVulnerabilityException
