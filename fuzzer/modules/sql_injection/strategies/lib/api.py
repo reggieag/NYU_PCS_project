@@ -1,11 +1,4 @@
-import os
 import json
-
-# TODO: Pull and construct from environment variables
-HOST_ADDRESS = 'http://127.0.0.1:8080'
-
-# TODO: Dynamically generate in Restler
-GRAMMAR_FILE = os.path.join(os.path.dirname(__file__), 'Compile/grammar.json')
 
 
 class UnexpectedPathParameters(Exception):
@@ -112,15 +105,3 @@ def build_requests_from_restler_grammar(grammar_file):
         requests.append(request)
 
     return requests
-
-
-# TODO: Build tests
-if __name__ == "__main__":
-    requests = build_requests_from_restler_grammar(GRAMMAR_FILE)
-    for request in requests:
-        if request.has_path_parameters:
-            print(request.method)
-            print(request.concretize_api_string(HOST_ADDRESS, [1]))
-        else:
-            print(request.method)
-            print(request.concretize_api_string(HOST_ADDRESS))

@@ -2,6 +2,15 @@ import time
 import os
 import sys
 
+from strategies.blind import blind_sql_injection_test
+
+# TODO: Pull and construct from environment variables
+HOST_ADDRESS = 'http://127.0.0.1:8080'
+
+# TODO: Dynamically generate in Restler
+GRAMMAR_FILE = os.path.join(os.path.dirname(__file__), 'Compile/grammar.json')
+
+
 print(os.environ)
 
 # TODO: Poll DB to make sure that its up and running
@@ -11,6 +20,7 @@ print(os.environ)
 # TODO: Generate SQL injection calls
 # TODO: Verify DB changes and report error appropriately
 
+blind_sql_injection_test(GRAMMAR_FILE, HOST_ADDRESS)
 
 time.sleep(4)
 print("pretend we're running")
