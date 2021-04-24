@@ -1,10 +1,10 @@
 import requests
 import uuid
 
-from lib.lab_6 import generate_api_calls
+from .lib.lab_6 import generate_api_calls
 
 
-class UnionAttackVulnerabilityException:
+class UnionAttackVulnerabilityException(Exception):
     """
     Detected a union attack vulnerability.
     """
@@ -32,4 +32,4 @@ def union_attack_test(host, grammar):
         # we know that a sql injection attack happened since there is almost no chance
         # that the uuid we just generated is going to be constructed by the server naturally.
         if res.status_code == 200 and str(attack_uuid) in res.text:
-            raise UnionAttackVulnerabilityException
+            raise UnionAttackVulnerabilityException(f"Union attack vulnerability detected for url {url} and data {data}")
