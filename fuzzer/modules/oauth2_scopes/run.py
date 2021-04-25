@@ -5,6 +5,7 @@ from security import SecuritySchemes
 from schema import Schema
 from run_generator import Generator
 from auth_request import AuthRequest
+import logging
 
 
 class Run:
@@ -15,6 +16,7 @@ class Run:
 
     def __init__(self, schema='', clients='', api_url='', exhaustive=False):
         temp_file = self._write_temporary_file(schema=schema)
+        logging.debug('generating temporary schema file {}'.format(temp_file))
         self._schema = Schema(temp_file, api_url)
         self._security_schemes = self._schema.security_schemes
         parsed_clients = Clients(clients_list=clients)
@@ -34,34 +36,34 @@ class Run:
         """
         Start the module and fuzz the api
         """
-        print(
+        logging.debug(
             'Starting oauth2_scopes fuzzer on exhaustive mode: {}'.format(
                 self._exahustive))
-        print('Using  base url {}'.format(self._api_url))
-        print(
+        logging.debug('Using  base url {}'.format(self._api_url))
+        logging.debug(
             'Using security schemes: {}'.format(
                 self._security_schemes.schemes))
-        print('Starting')
         oauth_session = AuthRequest(self._security_schemes)
+        gucci = True
         for run in self._runs:
-            print('Starting run with client id: {}'.format(run.id))
-            print('Using available client scopes {}'.format(run.scopes))
+            logging.info('Starting run with client id: {}'.format(run.id))
+            logging.info('Using available client scopes {}'.format(run.scopes))
             for path in self._schema.paths:
                 url = path.generate_path()
                 body = None
                 if path.body_required:
                     body = path.generate_request_body(
                         application_type=path.application_types[0])
-                print(
+                logging.info(
                     'Testing path: {} with generated url {} method {} body {}'.format(
                         path.path, url, path.request_method, body))
                 for security in path.security.keys():
-                    print(
+                    logging.info(
                         'Using security scheme {} requiring scopes: {}'.format(
                             security, path.security[security]))
                     try:
                         request = oauth_session.create_request(run, security)
-                        print('Acquired token: {}'.format(request[0]))
+                        logging.debug('Acquired token: {}'.format(request[0]))
                         request_transport = request[1]
                         response = None
                         if path.request_method == 'get':
@@ -72,14 +74,20 @@ class Run:
                             response = request_transport.delete(url)
                         elif path.request_method == 'patch':
                             response = request_transport.patch(url, data=body)
-                        print('response code: {}'.format(response.status_code))
+                        logging.debug(
+                            'response code: {}'.format(
+                                response.status_code))
                         if self._validate_response(
                                 response, run.scopes, path.security[security]):
-                            print('Response is authorized')
+                            logging.info('Response is authorized')
                         else:
-                            print('Response should not be authorized')
+                            warning = 'Endpoint {} with method {} requires scopes {}. Non-forbidden HTTP code returned with scopes {}'.format(
+                                path.path, path.request_method, path.security[security], run.scopes)
+                            logging.warning(warning)
+                            gucci = False
                     except Exception as e:
-                        print(e)
+                        logging.error(e)
+        return gucci
 
     def _validate_response(self, response, client_scopes, required_scopes):
         required_set = set(required_scopes)
@@ -100,12 +108,26 @@ if __name__ == "__main__":
 
     exhaustive = (os.getenv('EXHAUSTIVE') == 'true')
     force_http = (os.getenv('FORCE_HTTP') == 'true')
+    log_level = os.getenv('LOG_LEVEL')
+    logging_format = '%(levelname)s:module_oauth2_scopes:%(message)s'
+    if log_level == 'DEBUG':
+        logging.basicConfig(format=logging_format, level=logging.DEBUG)
+    elif log_level == 'INFO':
+        logging.basicConfig(format=logging_format, level=logging.INFO)
+    elif log_level == 'WARNING':
+        logging.basicConfig(format=logging_format, level=logging.WARNING)
+    elif log_level == 'ERROR':
+        logging.basicConfig(format=logging_format, level=logging.ERROR)
+    else:
+        logging.basicConfig(format=logging_format, level=logging.INFO)
     if force_http:
-        print('Forcing HTTP mode')
+        logging.info('Forcing HTTP mode')
         os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
     run = Run(
         schema=schema,
         clients=clients_list,
         api_url=url,
         exhaustive=exhaustive)
-    run.run()
+    if run.run():
+        sys.exit(0)
+    sys.exit(1)
