@@ -51,6 +51,6 @@ func (r *Runner) executeModule(ctx context.Context, start StartSetup, stop StopT
 	if err != nil {
 		return err
 	}
-	err = module(ctx, moduleConfig, r.apiURL, r.schema, r.clientsList)
+	err = module(ctx, moduleConfig.Data, r.apiURL, r.schema, r.clientsList)
 	return err
 }
