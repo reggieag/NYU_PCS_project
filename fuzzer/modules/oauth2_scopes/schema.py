@@ -17,13 +17,22 @@ class Schema:
 
     @property
     def security_schemes(self):
+        """
+        Get the security schemas defined in the schema
+        """
         return self._security_schemes
 
     @property
     def paths(self):
+        """
+        Get all the paths defined in the schema
+        """
         return self._paths
 
     def _parse_paths(self, paths):
+        """
+        Utility function to parse through paths defined in schema
+        """
         parsed_paths = []
         for path in paths.keys():
             path_methods = paths[path]
