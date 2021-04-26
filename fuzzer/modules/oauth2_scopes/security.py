@@ -1,6 +1,3 @@
-import yaml
-
-
 class BadSecurityScheme(Exception):
     def __init__(
             self, message='Security schema section is improperly formatted'):
@@ -143,7 +140,6 @@ class SecuritySchemes:
         """
         Parses the securitySchemes section of an OpenAPI schema
         """
-        schema = yaml.safe_load(schema)
         if schema is None:
             raise BadSecurityScheme
         try:

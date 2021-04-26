@@ -26,19 +26,10 @@ paths:
     post:
       description: Add a new row to the db
       requestBody:
-        $ref: '#/components/requestBodies/inline_object'
         content:
           application/json:
             schema:
-              properties:
-                name:
-                  type: string
-                quantity:
-                  type: integer
-              required:
-              - name
-              - quantity
-              type: object
+              $ref: '#/components/schemas/CreateInput'
         required: true
       responses:
         "200":
@@ -109,16 +100,10 @@ paths:
           type: integer
         style: simple
       requestBody:
-        $ref: '#/components/requestBodies/inline_object_1'
         content:
           application/json:
             schema:
-              properties:
-                name:
-                  type: string
-                quantity:
-                  type: integer
-              type: object
+              $ref: '#/components/schemas/UpdateInput'
         required: true
       responses:
         "200":
@@ -161,20 +146,6 @@ components:
             write: modify data on a per id basis
             all: permission client for database wide operations
 
-
-  requestBodies:
-    inline_object_1:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/inline_object_1'
-      required: true
-    inline_object:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/inline_object'
-      required: true
   schemas:
     DataOutput:
       properties:
@@ -188,7 +159,7 @@ components:
       - dataId
       - name
       - quantity
-    inline_object:
+    CreateInput:
       properties:
         name:
           type: string
@@ -198,7 +169,7 @@ components:
       - name
       - quantity
       type: object
-    inline_object_1:
+    UpdateInput:
       properties:
         name:
           type: string

@@ -2,3 +2,6 @@ fuzzer/fuzzer
 auth_service/auth_service
 service/server
 service/service
+*.venv
+*__pycache__
+*.vscode
