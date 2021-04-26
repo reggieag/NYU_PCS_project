@@ -26,7 +26,8 @@ def union_attack_test(base_url, api_call_generator, parse_response_fn):
     This test attempts a union attack against an endpoint.
 
     :param base_url: The API base_url. Unused for this particular test.
-    :param grammar: Restler grammar. Unused for this particular test.
+    :param api_call_generator: Restler grammar. Unused for this particular test.
+    :param parse_response_fn: Function to parse the UUID from the response
     :return: Boolean denoting whether or not the test has passed
     """
     attack_uuid = uuid.uuid4()
@@ -50,9 +51,7 @@ def union_attack_test(base_url, api_call_generator, parse_response_fn):
 
 lab_6_union_attack_test = partial(union_attack_test, api_call_generator=lab_6.generate_api_calls, parse_response_fn=lab_6.parse_response)
 
-
 def generate_api_calls_openapi(base_url, attack_param):
-    # TODO: Implement this for reals.
     url = base_url + '/data/' + attack_param
     return [(url, None, 'get')]
 

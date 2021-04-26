@@ -7,7 +7,7 @@ from contextlib import closing
 SQL_FIXTURE_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), 'api_fixture_data.sql'))
 
 # TODO replace with env variables
-TARGET_DBCONFIG = {
+DBCONFIG = {
     "host": "127.0.0.1",
     "port": 5432,
     "user": 'api_user',
@@ -32,12 +32,12 @@ def execute_postgres_sql(sql_filename, db_config, sql_dir=None):
 
 
 def get_tables(db_config):
-    sql = 'select schema_name, table_name from information_schema.tables'
+    sql = 'select distinct table_name from information_schema.tables'
     postgres_conn = psycopg2.connect(**db_config)
     with closing(postgres_conn) as conn:
         with closing(conn.cursor()) as cur:
             cur.execute(sql)
-            return cur.fetch_all()
+            return cur.fetchall()
 
 
 def truncate_tables(db_config):
@@ -50,6 +50,8 @@ def truncate_tables(db_config):
                 cur.execute(sql)
 
 
-def reset_fixture_data():
-    truncate_tables(TARGET_DBCONFIG)
-    execute_postgres_sql(SQL_FIXTURE_FILE, TARGET_DBCONFIG)
+def drop_table(db_config, table):
+    postgres_conn = psycopg2.connect(**db_config)
+    with closing(postgres_conn) as conn:
+        with closing(conn.cursor()) as cur:
+            cur.execute(f'drop table if exists "{table}"')
