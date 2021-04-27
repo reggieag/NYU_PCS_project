@@ -9,8 +9,8 @@ from .lib.postgres import get_tables, drop_table, DBCONFIG
 
 def openapi_api_call_generator(base_url, attack_param):
     # TODO: Implement this for reals
-    data = {'name': attack_param, 'quantity': 2}
-    return [('http://127.0.0.1:8080/data/1', data, 'post')]
+    body = {'name': attack_param, 'quantity': 2}
+    return [('http://127.0.0.1:8080/data/1', body, 'post')]
 
 
 def create_table_attack_test(base_url, api_call_generator):
