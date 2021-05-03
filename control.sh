@@ -1,4 +1,9 @@
 #!/bin/bash
+
+# Control script to idempotently start/stop all services
+# This is done by pinging the service and making sure that the script
+# Doesn't exit until the service responds to ping
+
 function ping_api {
     for i in {1..5..2}
     do
