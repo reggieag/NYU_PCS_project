@@ -13,20 +13,6 @@ jobs:
         with:
           path: main
       
-      - name: Checkout RESTler dockerfile repo
-        uses: actions/checkout@v2
-        with:
-          repository: reggieag/restler-fuzzer
-          path: restler
-
-      - name: Verify checkouts
-        run: ls ${{ github.workspace }}
-      
-      - name: Build RESTLer Image
-        run: | 
-          cd ${{ github.workspace }}/restler
-          ./build_docker.sh
-      
       - name: Build Fuzzer Images
         run: |
           cd ${{ github.workspace }}/main/fuzzer
