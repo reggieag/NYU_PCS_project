@@ -3,7 +3,7 @@ import uuid
 
 from functools import partial
 
-from .lib import lab_6
+from .lib import lab_6, parse_response
 
 ATTACK_TEMPLATES = [
     "' union select '{uuid}' --",
@@ -43,7 +43,7 @@ def union_attack_test(base_url, api_call_generator, parse_response_fn):
             else:
                 continue
 
-            # No we check if we were able to insert the UUID into the result. We need to define
+            # Now we check if we were able to insert the UUID into the result. We need to define
             # a parser that can extract the UUID from the response text.
             if res.status_code == 200 and str(attack_uuid) == parse_response_fn(res.text):
                 raise UnionAttackVulnerabilityException(f"Union attack vulnerability detected for url {url} and data {data}")
@@ -51,12 +51,11 @@ def union_attack_test(base_url, api_call_generator, parse_response_fn):
 
 lab_6_union_attack_test = partial(union_attack_test, api_call_generator=lab_6.generate_api_calls, parse_response_fn=lab_6.parse_response)
 
+
 def generate_api_calls_openapi(base_url, attack_param):
+    # TODO: Swap in a more automated generator. For now you can think of this as a test fixture.
     url = base_url + '/data/' + attack_param
     return [(url, None, 'get')]
 
 
-def parse_response_openapi(response):
-    return None
-
-openapi_union_attack_test = partial(union_attack_test, api_call_generator=generate_api_calls_openapi, parse_response_fn=parse_response_openapi)
+openapi_union_attack_test = partial(union_attack_test, api_call_generator=generate_api_calls_openapi, parse_response_fn=parse_response)
