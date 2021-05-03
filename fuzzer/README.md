@@ -9,13 +9,15 @@ By default, `Go` places the executable in the same folder from which
 `go build` was invoked, with the executable taking the name of the the containing folder.
 
 
-`Fuzzy Wuzzy` only takes one argument, a config file. THe config file itself has two sections:
+`Fuzzy Wuzzy` only takes one argument, a config file. The config file itself has two sections:
 
 1. Runner config
 2. Module config
 
 The runner config contains configuration variables that will be evaluated and passed to each individual module.
 The module config is only evaluated and passed to the relevant module.
+
+tl;dr run `./fuzzer <your config file name>` in the folder where you built `Fuzzy Wuzzy`.
 
 ## Runner Config
 
