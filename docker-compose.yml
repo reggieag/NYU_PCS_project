@@ -26,6 +26,7 @@ services:
         - "api_postgres_db"
       
     auth_service:
+      command: "/src/clients.yml"
       build:
           context: ./auth_service
           dockerfile: Dockerfile

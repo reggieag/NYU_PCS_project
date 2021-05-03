@@ -6,15 +6,6 @@ from contextlib import closing
 
 SQL_FIXTURE_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), 'api_fixture_data.sql'))
 
-# TODO replace with env variables
-DBCONFIG = {
-    "host": "127.0.0.1",
-    "port": 5432,
-    "user": 'api_user',
-    "password": 'password',
-    "dbname": 'toy_api',
-}
-
 
 def read_sql_file(sql_filename, sql_dir=None):
     with open(sql_filename, "r") as sql_file:
