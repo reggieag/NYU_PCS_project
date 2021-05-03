@@ -39,4 +39,4 @@ The database is exposed on `port 5324`.
 
 
 Once `Fuzzy Wuzzy` has been built, it can be run as any other executable. 
-Please see [the Fuzzy Fuzzy README](./fuzzer/README.md) to build and run `Fuzzy Wuzzy`.
+Please see [the Fuzzy Wuzzy README](./fuzzer/README.md) to build and run `Fuzzy Wuzzy`.
