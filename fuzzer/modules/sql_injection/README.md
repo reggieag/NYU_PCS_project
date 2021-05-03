@@ -33,7 +33,7 @@ The UNION in this statement has a `where 1=1` which always evalutes to true, eff
 
 We take this attack strategy and build code to automatically detect it in `strategies/lib/union_strategy.py`. We run into two issues that are solved in the `create_table` strategy.
 1. We need some way to generate valid API calls. For this example we are hard coding a known vulnerable endpoint. Obviously this is not a realistic pattern since knowing a vulnerable API endpoint exists makes the need to detect it less valuable.
-1. The strategy also requires a valid response parser be able to be defined. If you look at the function `strategies.lib.lab_6.parse_response()` you can see the parser we defined for lab6. There are a couple disadvantages to this approach. One is that we need to define a parser for each API endpoint. This becomes hard to manage as API endpoints grows. The other disadvantage is that the union attack has to somehow inject some information into the response. This isn't always guaranteed.
+1. The strategy also requires a valid response parser be able to be defined. If you look at the function `api.lab_6.parse_response()` you can see the parser we defined for lab6. There are a couple disadvantages to this approach. One is that we need to define a parser for each API endpoint. This becomes hard to manage as API endpoints grows. The other disadvantage is that the union attack has to somehow inject some information into the response. This isn't always guaranteed.
 
 
 We solve problem one, API call generation, as part of this project. We talk about the details more in other documentation so will not go into our approach here. The other issue around detection is solved in the `sql_injection` method.

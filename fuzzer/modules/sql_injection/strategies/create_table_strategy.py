@@ -1,12 +1,13 @@
 import logging
 import uuid
 
+from api.run_generator import Generator
+from api.request_generator import DefaultRandomGenerator
+from api.clients import Clients
+from api.schema import Schema
+from api.auth_request import AuthRequest
+
 from strategies.lib.postgres import get_tables, drop_table
-from strategies.lib.run_generator import Generator
-from strategies.lib.request_generator import DefaultRandomGenerator
-from strategies.lib.clients import Clients
-from strategies.lib.schema import Schema
-from strategies.lib.auth_request import AuthRequest
 
 
 class CreateTableGenerator(DefaultRandomGenerator):
