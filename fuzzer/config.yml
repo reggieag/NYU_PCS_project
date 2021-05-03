@@ -13,6 +13,8 @@ modules:
       exhaustive: true
       force_http: true
   - sql_injection:
+      force_http: true
+      exhaustive: false
       database:
         name: "toy_api"
         username: "api_user"

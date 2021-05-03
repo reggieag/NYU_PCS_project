@@ -1,7 +1,10 @@
-FROM microsoft/restler-fuzzer:7.3.0
+FROM python:3
 
 WORKDIR /fuzzer
 
-COPY run.py /fuzzer/run.py
+COPY . /fuzzer/
 
-ENTRYPOINT [ "/usr/bin/python3", "/fuzzer/run.py"]
+RUN python -m pip install -e /fuzzer/api
+RUN pip install -r /fuzzer/requirements.txt
+
+ENTRYPOINT [ "python", "/fuzzer/run.py"]

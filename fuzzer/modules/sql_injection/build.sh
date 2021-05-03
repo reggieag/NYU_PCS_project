@@ -1,2 +1,5 @@
 #!/bin/bash
-docker build . --file Dockerfile --tag fuzzer-modules-sql_injection:latest 
+
+cp -rf ../api ./
+
+docker build --no-cache . --file Dockerfile --tag fuzzer-modules-sql_injection:latest

@@ -4,6 +4,6 @@ WORKDIR /fuzzer
 
 COPY . /fuzzer/
 
-RUN pip install -r /fuzzer/requirements.txt
+RUN python -m pip install -e /fuzzer/api
 
 ENTRYPOINT [ "python", "/fuzzer/run.py"]

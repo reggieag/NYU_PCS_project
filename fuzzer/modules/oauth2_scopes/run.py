@@ -1,11 +1,11 @@
 import os
 import sys
-from clients import Clients
-from security import SecuritySchemes
-from schema import Schema
-from run_generator import Generator
-from auth_request import AuthRequest
 import logging
+
+from api.clients import Clients
+from api.schema import Schema
+from api.run_generator import Generator
+from api.auth_request import AuthRequest
 
 
 class Run:

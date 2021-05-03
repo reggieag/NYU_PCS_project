@@ -12,6 +12,9 @@ import (
 const dockerName = "fuzzer-modules-sql_injection"
 
 type sqlInjectionConfig struct {
+	Exhaustive bool   `yaml:"exhaustive"`
+	ForceHTTP  bool   `yaml:"force_http"`
+	LogLevel   string `yaml:"log_level"`
 	Database struct {
 		Name     string
 		Username string
@@ -35,6 +38,9 @@ func SQLInjectorModule(ctx context.Context, moduleConfig interface{}, apiUrl, ap
 		"DB_HOST":     config.Database.Host,
 		"API_SCHEMA":  apiSchema,
 		"API_CLIENTS": clients,
+		"EXHAUSTIVE":  strconv.FormatBool(config.Exhaustive),
+		"FORCE_HTTP":  strconv.FormatBool(config.ForceHTTP),
+		"LOG_LEVEL":   config.LogLevel,
 	}
 	log.Printf("Starting SQL Injection Module Container\n")
 	return utilities.RunImage(dockerName, env)

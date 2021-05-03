@@ -1,18 +1,48 @@
-import time
 import os
+import logging
 import sys
 
-print(os.environ)
-
-# TODO: Poll DB to make sure that its up and running
-# TODO: Poll API to make sure that its up and running (In this case, the API will be running the moment the DB is ready)
-# TODO: Compile openAPI spec with RESTler
-# TODO: Read in grammar.json
-# TODO: Generate SQL injection calls
-# TODO: Verify DB changes and report error appropriately
+from strategies.create_table_strategy import Run
 
 
-time.sleep(4)
-print("pretend we're running")
-time.sleep(4)
-sys.exit("Will this report error back to Go?")
+if __name__ == "__main__":
+    schema = os.getenv('API_SCHEMA')
+    clients_list = os.getenv('API_CLIENTS')
+    url = os.getenv('API_URL')
+
+    db_config = {
+        "host": os.environ['DB_HOST'],
+        "port": os.environ['DB_PORT'],
+        "user": os.environ['DB_USERNAME'],
+        "password": os.environ['DB_PASSWORD'],
+        "dbname": os.environ['DB_NAME'],
+    }
+
+    exhaustive = (os.getenv('EXHAUSTIVE') == 'true')
+    force_http = (os.getenv('FORCE_HTTP') == 'true')
+    log_level = os.getenv('LOG_LEVEL')
+    logging_format = '%(levelname)s:sql_injection_module:%(message)s'
+    if log_level == 'DEBUG':
+        logging.basicConfig(format=logging_format, level=logging.DEBUG)
+    elif log_level == 'INFO':
+        logging.basicConfig(format=logging_format, level=logging.INFO)
+    elif log_level == 'WARNING':
+        logging.basicConfig(format=logging_format, level=logging.WARNING)
+    elif log_level == 'ERROR':
+        logging.basicConfig(format=logging_format, level=logging.ERROR)
+    else:
+        logging.basicConfig(format=logging_format, level=logging.INFO)
+
+    if force_http:
+        logging.info('Forcing HTTP mode')
+        os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+
+    gucci = Run(
+        schema=schema,
+        clients=clients_list,
+        api_url=url,
+        exhaustive=exhaustive,
+        db_config=db_config).run()
+    if gucci:
+        sys.exit(0)
+    sys.exit(1)
