@@ -87,7 +87,7 @@ paths:
           description: Data with specified id not found
       summary: Get data by id
       security:
-        - standard: [write]
+        - standard: [read]
 
     post:
       parameters:

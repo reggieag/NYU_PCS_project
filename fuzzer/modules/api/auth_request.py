@@ -39,11 +39,15 @@ class AuthRequest:
             # https://requests-oauthlib.readthedocs.io/en/latest/oauth2_workflow.html#backend-application-flow
             # This took me a few hours and digging through their source code to
             # figure out...
+            # Also as it turns out, passing in the scopes to OAuth2Session doesn't do anything
+            # Basically, this documentation is garbage
+            request_scopes = ','.join(client.scopes)
             token = oauth.fetch_token(
                 client_credentials.token_url,
                 client_id=client.id,
                 client_secret=client.secret,
-                include_client_id=True)
+                include_client_id=True,
+                scope=request_scopes)
             return (token, oauth)
         except KeyError as e:
             raise AuthRequestException from e
