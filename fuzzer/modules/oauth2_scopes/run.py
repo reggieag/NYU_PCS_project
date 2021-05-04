@@ -81,8 +81,8 @@ class Run:
                                 response, run.scopes, path.security[security]):
                             logging.info('Response is authorized')
                         else:
-                            warning = 'Endpoint {} with method {} requires scopes {}. Non-forbidden HTTP code returned with scopes {}'.format(
-                                path.path, path.request_method, path.security[security], run.scopes)
+                            warning = 'Endpoint {} with method {} requires scopes {}. With scopes {}, given status code {}'.format(
+                                path.path, path.request_method, path.security[security], run.scopes, response.status_code)
                             logging.warning(warning)
                             gucci = False
                     except Exception as e:
@@ -96,9 +96,9 @@ class Run:
         # We're counting 401, 403 as auth denied
         response_denied = response.status_code == 401 or response.status_code == 403
         if should_auth:
-            return not response_denied
+            return response_denied is False 
         else:
-            return response_denied
+            return response_denied is True 
 
 
 if __name__ == "__main__":
