@@ -10,3 +10,9 @@ clients:
     scopes:
       - read
 
+  - client_id: beni
+    client_secret: dechi
+    scopes:
+      - read
+      - write
+      - all
