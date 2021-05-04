@@ -45,4 +45,5 @@ def drop_table(db_config, table):
     postgres_conn = psycopg2.connect(**db_config)
     with closing(postgres_conn) as conn:
         with closing(conn.cursor()) as cur:
-            cur.execute(f'drop table if exists "{table}"')
+            cur.execute(f'drop table if exists "{table}";')
+            conn.commit()

@@ -86,7 +86,7 @@ class Run:
 
                     tables = get_tables(self.db_config)
                     if any([True for table in tables if str(attack_uuid) == table[0]]):
-                        logging.warning(f"Vulnerability found for {url} method {path.request_method} body {body}")
+                        logging.warning(f" SQL injection vulnerability found.\n\turl: {url} \n\tmethod: {path.request_method} \n\tbody: {body}")
                         gucci = False
 
                         drop_table(self.db_config, attack_uuid)
