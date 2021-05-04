@@ -12,9 +12,11 @@ modules:
   - oauth2_scopes:
       exhaustive: true
       force_http: true
+      log_level: "WARNING"
   - sql_injection:
       force_http: true
       exhaustive: false
+      log_level: "WARNING"
       database:
         name: "toy_api"
         username: "api_user"
