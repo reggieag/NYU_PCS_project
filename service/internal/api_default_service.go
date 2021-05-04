@@ -13,7 +13,6 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"strings"
 )
 
 // DefaultApiService is a service that implents the logic for the DefaultApiServicer
@@ -22,6 +21,12 @@ import (
 type DefaultApiService struct {
 	db ToyAPIDB
 }
+
+const (
+	writeScope = "write"
+	readScope  = "read"
+	allScope   = "all"
+)
 
 // NewDefaultApiService creates a default api service
 func NewDefaultApiService(db ToyAPIDB) DefaultApiServicer {
@@ -32,7 +37,9 @@ func NewDefaultApiService(db ToyAPIDB) DefaultApiServicer {
 
 // DataDataIdDelete - Delete data by id
 func (s *DefaultApiService) DataDataIdDelete(ctx context.Context, dataId int32) (ImplResponse, error) {
-	isUserAuthorized(ctx, []string{})
+	if ok := isUserAuthorized(ctx, []string{writeScope}); !ok {
+		return Response(http.StatusForbidden, nil), nil
+	}
 	log.Printf("deleting row with id %d", dataId)
 	err := s.db.DeleteDataByID(ctx, int(dataId))
 	if err != nil {
@@ -45,7 +52,9 @@ func (s *DefaultApiService) DataDataIdDelete(ctx context.Context, dataId int32) 
 
 // DataDataIdGet - Get data by id
 func (s *DefaultApiService) DataDataIdGet(ctx context.Context, dataId int32) (ImplResponse, error) {
-	isUserAuthorized(ctx, []string{})
+	if ok := isUserAuthorized(ctx, []string{readScope}); !ok {
+		return Response(http.StatusForbidden, nil), nil
+	}
 	log.Printf("getting row with id %d", dataId)
 	resp, err := s.db.GetDataByID(ctx, int(dataId))
 	if err != nil {
@@ -58,7 +67,9 @@ func (s *DefaultApiService) DataDataIdGet(ctx context.Context, dataId int32) (Im
 
 // DataDataIdPost - Update data by id
 func (s *DefaultApiService) DataDataIdPost(ctx context.Context, dataId int32, inlineObject1 InlineObject1) (ImplResponse, error) {
-	isUserAuthorized(ctx, []string{})
+	if ok := isUserAuthorized(ctx, []string{writeScope}); !ok {
+		return Response(http.StatusForbidden, nil), nil
+	}
 	log.Printf("updating row with id %d with name %s, quantity %d", dataId, inlineObject1.Name, inlineObject1.Quantity)
 	if inlineObject1.Name == "" && inlineObject1.Quantity == 0 {
 		log.Printf("both name and quantity are invalid")
@@ -76,7 +87,9 @@ func (s *DefaultApiService) DataDataIdPost(ctx context.Context, dataId int32, in
 
 // DataGet - Returns a list of data.
 func (s *DefaultApiService) DataGet(ctx context.Context) (ImplResponse, error) {
-	isUserAuthorized(ctx, []string{})
+	if ok := isUserAuthorized(ctx, []string{readScope, allScope}); !ok {
+		return Response(http.StatusForbidden, nil), nil
+	}
 	log.Printf("receiving get all data request")
 	resp, err := s.db.GetData(ctx)
 	if err != nil {
@@ -89,7 +102,9 @@ func (s *DefaultApiService) DataGet(ctx context.Context) (ImplResponse, error) {
 
 // DataPost - Add a new entry
 func (s *DefaultApiService) DataPost(ctx context.Context, inlineObject InlineObject) (ImplResponse, error) {
-	isUserAuthorized(ctx, []string{})
+	if ok := isUserAuthorized(ctx, []string{writeScope}); !ok {
+		return Response(http.StatusForbidden, nil), nil
+	}
 	log.Printf("receiving add data with name %s quantity %d", inlineObject.Name, inlineObject.Quantity)
 	if inlineObject.Name == "" && inlineObject.Quantity == 0 {
 		log.Printf("both fields are 'null'. Bad request.")
@@ -108,6 +123,16 @@ func (s *DefaultApiService) DataPost(ctx context.Context, inlineObject InlineObj
 
 func isUserAuthorized(ctx context.Context, scopes []string) bool {
 	userScopes := getScopes(ctx)
-	log.Printf("user scopes: %s", strings.Join(userScopes, ","))
+	log.Printf("user scopes: %#v", userScopes)
+	log.Printf("required scopes: %#v", scopes)
+	scopeMap := make(map[string]bool)
+	for _, scope := range userScopes {
+		scopeMap[scope] = true
+	}
+	for _, scope := range scopes {
+		if _, ok := scopeMap[scope]; !ok {
+			return false
+		}
+	}
 	return true
 }

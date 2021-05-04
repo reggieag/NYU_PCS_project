@@ -35,14 +35,8 @@ func NewDBConn(host string, port int, user string, password string, dbName strin
 	return &APIDatabase{db}, nil
 }
 
-/*
-* All these queries are exactly the wrong way to be doing SQL.
-* This is the point...
- */
-
 func (db *APIDatabase) GetData(ctx context.Context) ([]DataOutput, error) {
-	query := fmt.Sprintf("SELECT id, name, quantity FROM data_table")
-	result, err := db.db.QueryContext(ctx, query)
+	result, err := db.db.QueryContext(ctx, "SELECT id, name, quantity FROM data_table")
 	if err != nil {
 		return nil, err
 	}
@@ -59,17 +53,17 @@ func (db *APIDatabase) GetData(ctx context.Context) ([]DataOutput, error) {
 }
 
 func (db *APIDatabase) AddData(ctx context.Context, name string, quantity int) (DataOutput, error) {
-	query := fmt.Sprintf("INSERT INTO data_table (name, quantity) VALUES ('%s', %d) RETURNING id", name, quantity)
+	const query = "INSERT INTO data_table (name, quantity) VALUES ($1, $2) RETURNING id"
 	var id int
-	err := db.db.QueryRowContext(ctx, query).Scan(&id)
+	err := db.db.QueryRowContext(ctx, query, name, quantity).Scan(&id)
 	if err != nil {
 		return DataOutput{}, err
 	}
 	return db.GetDataByID(ctx, int(id))
 }
 func (db *APIDatabase) GetDataByID(ctx context.Context, id int) (DataOutput, error) {
-	query := fmt.Sprintf("SELECT id, name, quantity FROM data_table WHERE id = %d", id)
-	result := db.db.QueryRowContext(ctx, query)
+	const query = "SELECT id, name, quantity FROM data_table WHERE id = $1"
+	result := db.db.QueryRowContext(ctx, query, id)
 	var returnVal DataOutput
 	if err := result.Scan(&returnVal.DataId, &returnVal.Name, &returnVal.Quantity); err != nil {
 		return returnVal, err
@@ -79,14 +73,22 @@ func (db *APIDatabase) GetDataByID(ctx context.Context, id int) (DataOutput, err
 }
 func (db *APIDatabase) UpdateDataByID(ctx context.Context, id int, name string, quantity int) (DataOutput, error) {
 	updateParams := make([]string, 0, 2)
+	updateParamValues := make([]interface{}, 0, 2)
 	if name != "" {
-		updateParams = append(updateParams, fmt.Sprintf("name = '%s'", name))
+		updateParams = append(updateParams, "name")
+		updateParamValues = append(updateParamValues, name)
 	}
 	if quantity != 0 {
-		updateParams = append(updateParams, fmt.Sprintf("quantity = '%d'", quantity))
+		updateParams = append(updateParams, "quantity")
+		updateParamValues = append(updateParamValues, quantity)
 	}
-	query := fmt.Sprintf("UPDATE data_table SET %s WHERE id = %d", strings.Join(updateParams, ","), id)
-	result, err := db.db.ExecContext(ctx, query)
+	var updateStr []string
+	for i := range updateParams {
+		updateStr = append(updateStr, fmt.Sprintf("%s = $%d", updateParams[i], i+1))
+	}
+	query := fmt.Sprintf("UPDATE data_table SET %s WHERE id = $%d", strings.Join(updateStr, ","), len(updateParams)+1)
+	updateParamValues = append(updateParamValues, id)
+	result, err := db.db.ExecContext(ctx, query, updateParamValues...)
 	if err != nil {
 		return DataOutput{}, err
 	}
@@ -100,8 +102,8 @@ func (db *APIDatabase) UpdateDataByID(ctx context.Context, id int, name string, 
 	return db.GetDataByID(ctx, id)
 }
 func (db *APIDatabase) DeleteDataByID(ctx context.Context, id int) error {
-	query := fmt.Sprintf("DELETE FROM data_table WHERE id = %d", id)
-	result, err := db.db.ExecContext(ctx, query)
+	const query = "DELETE FROM data_table WHERE id = $1"
+	result, err := db.db.ExecContext(ctx, query, id)
 	if err != nil {
 		return err
 	}
